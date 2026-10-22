@@ -1,0 +1,12 @@
+{
+  "name": "sonrisas-presupuestos",
+  "version": "1.0.0",
+  "description": "Presupuestos de Sonrisas Perfectas (Cloudflare Pages + D1)",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 DB=sonrisas-local"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.17"
+  },
+  "private": true
+}

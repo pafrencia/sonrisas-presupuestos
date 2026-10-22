@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Presupuestos · Sonrisas Perfectas</title>
+  <link rel="icon" href="logo.jpg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ingreso -->
+  <section id="view-login" class="auth" hidden>
+    <form id="login-form" class="auth-card">
+      <img src="logo.jpg" alt="Sonrisas Perfectas" class="auth-logo">
+      <h1 id="login-title">Ingresar</h1>
+      <p id="login-help" class="muted"></p>
+      <label>Usuario <input name="username" autocomplete="username" required></label>
+      <label>Contraseña <input name="password" type="password" autocomplete="current-password" required></label>
+      <p class="error" id="login-error"></p>
+      <button class="btn primary" type="submit" id="login-submit">Ingresar</button>
+    </form>
+  </section>
+
+  <!-- App -->
+  <div id="view-app" hidden>
+    <header class="topbar no-print">
+      <img src="logo.jpg" alt="" class="topbar-logo">
+      <nav>
+        <button class="tab active" data-view="budget">Presupuesto</button>
+        <button class="tab admin-only" data-view="admin">Administración</button>
+        <button class="tab" data-view="account">Mi cuenta</button>
+      </nav>
+      <div class="who"><span id="who-name"></span> <span id="who-role" class="pill"></span>
+        <button class="btn link" id="logout">Salir</button></div>
+    </header>
+
+    <!-- PRESUPUESTO -->
+    <main id="panel-budget" class="panel">
+      <div class="toolbar no-print">
+        <button class="btn primary" id="print">Imprimir / generar PDF</button>
+        <button class="btn" id="add-row">Agregar fila</button>
+        <button class="btn" id="clear">Nuevo presupuesto</button>
+      </div>
+
+      <article class="sheet" id="budget">
+        <div class="sheet-head">
+          <img src="logo.jpg" alt="Sonrisas Perfectas Odontología" class="sheet-logo">
+          <div class="sheet-title">
+            <h1>PRESUPUESTO</h1>
+            <p>T R A T A M I E N T O &nbsp; O D O N T O L Ó G I C O</p>
+          </div>
+        </div>
+
+        <div class="meta">
+          <label class="meta-field"><span>FECHA</span>
+            <input type="date" id="fecha" class="no-print"><b class="print-only" id="fecha-print"></b></label>
+          <label class="meta-field grow"><span>PACIENTE</span>
+            <input id="paciente" placeholder="Nombre del paciente" class="no-print"><b class="print-only" id="paciente-print"></b></label>
+          <div class="meta-note" id="lista-note"></div>
+        </div>
+
+        <table class="budget-table">
+          <thead>
+            <tr>
+              <th class="c-code">CÓDIGO</th>
+              <th class="c-name">DETALLE</th>
+              <th id="h-lista"></th>
+              <th id="h-efectivo"></th>
+              <th id="h-transf"></th>
+              <th id="h-6"></th>
+              <th class="no-print c-x"></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="hint no-print">Escribí el código o buscá el tratamiento abajo. Las filas sin código no se imprimen.</p>
+
+        <div class="sheet-foot">
+          <div class="badge green" id="badge-efectivo"></div>
+          <div class="badge violet" id="badge-transf"></div>
+          <p class="validity" id="validity"></p>
+        </div>
+      </article>
+
+      <section class="search no-print">
+        <h2>Buscar tratamiento</h2>
+        <input id="search" type="search" placeholder="Escribí una palabra, por ejemplo: blanqueamiento">
+        <table class="list-table">
+          <thead><tr><th>Código</th><th>Tratamiento</th><th class="num" id="s-lista"></th><th class="num" id="s-ef"></th><th class="num" id="s-tr"></th><th class="num" id="s-6"></th><th></th></tr></thead>
+          <tbody id="search-results"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <!-- ADMINISTRACIÓN -->
+    <main id="panel-admin" class="panel no-print" hidden>
+      <div class="subtabs">
+        <button class="subtab active" data-sub="treatments">Tratamientos y precios</button>
+        <button class="subtab" data-sub="settings">Porcentajes y validez</button>
+        <button class="subtab" data-sub="users">Usuarios</button>
+      </div>
+
+      <section id="sub-treatments" class="card">
+        <div class="row-between">
+          <input id="admin-search" type="search" placeholder="Filtrar por código, nombre o categoría">
+          <div class="actions">
+            <button class="btn primary" id="new-treatment">Nuevo tratamiento</button>
+            <button class="btn" id="import-btn">Subir lista (Excel o CSV)</button>
+            <button class="btn" id="export-btn">Descargar lista</button>
+            <input type="file" id="import-file" accept=".csv,.xlsx,.xls,.txt" hidden>
+          </div>
+        </div>
+        <p class="muted">El precio que se carga es el de <b>efectivo</b>. Los demás se calculan solos con los porcentajes.</p>
+        <table class="list-table">
+          <thead><tr><th>Código</th><th>Tratamiento</th><th>Categoría</th><th class="num">Efectivo</th><th class="num">Lista</th><th class="num">Transf.</th><th class="num">6 cuotas</th><th></th></tr></thead>
+          <tbody id="admin-rows"></tbody>
+        </table>
+      </section>
+
+      <section id="sub-settings" class="card" hidden>
+        <form id="settings-form" class="settings-grid">
+          <label>Descuento efectivo (sobre lista) <span class="suffix"><input name="desc_efectivo" type="number" step="0.5" min="0" max="99"> %</span></label>
+          <label>Descuento transferencia / QR / débito <span class="suffix"><input name="desc_transferencia" type="number" step="0.5" min="0" max="100"> %</span></label>
+          <label>Recargo hasta 3 cuotas <span class="suffix"><input name="recargo_3_cuotas" type="number" step="0.5" min="0" max="100"> %</span></label>
+          <label>Recargo 6 cuotas <span class="suffix"><input name="recargo_6_cuotas" type="number" step="0.5" min="0" max="100"> %</span></label>
+          <label>Validez del presupuesto <span class="suffix"><input name="validez_dias" type="number" step="1" min="1" max="365"> días</span></label>
+          <p class="muted span2">Precio de lista = efectivo ÷ (1 − descuento efectivo). Ejemplo: con 20%, un tratamiento de $32.000 en efectivo tiene lista $40.000.</p>
+          <p class="error span2" id="settings-error"></p>
+          <div class="span2"><button class="btn primary">Guardar</button> <span class="ok" id="settings-ok"></span></div>
+        </form>
+      </section>
+
+      <section id="sub-users" class="card" hidden>
+        <form id="user-form" class="inline-form">
+          <input name="username" placeholder="Usuario nuevo" required>
+          <input name="password" type="password" placeholder="Contraseña (mín. 6)" required autocomplete="new-password">
+          <select name="role"><option value="user">Usuario común</option><option value="admin">Administrador</option></select>
+          <button class="btn primary">Crear usuario</button>
+        </form>
+        <p class="error" id="user-error"></p>
+        <table class="list-table">
+          <thead><tr><th>Usuario</th><th>Rol</th><th>Creado</th><th></th></tr></thead>
+          <tbody id="user-rows"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <!-- MI CUENTA -->
+    <main id="panel-account" class="panel no-print" hidden>
+      <form id="password-form" class="card narrow">
+        <h2>Cambiar mi contraseña</h2>
+        <label>Contraseña actual <input name="current" type="password" required autocomplete="current-password"></label>
+        <label>Contraseña nueva <input name="password" type="password" required autocomplete="new-password"></label>
+        <p class="error" id="password-error"></p>
+        <button class="btn primary">Guardar</button> <span class="ok" id="password-ok"></span>
+      </form>
+    </main>
+  </div>
+
+  <!-- Formulario de tratamiento -->
+  <dialog id="treatment-dialog">
+    <form id="treatment-form" method="dialog">
+      <h2 id="treatment-dialog-title">Tratamiento</h2>
+      <input type="hidden" name="originalCode">
+      <label>Código <input name="code" required></label>
+      <label>Tratamiento <input name="name" required></label>
+      <label>Categoría <input name="category" list="categories"></label>
+      <datalist id="categories"></datalist>
+      <label>Precio en efectivo <input name="efectivo" type="number" min="1" step="any" required></label>
+      <p class="muted" id="treatment-preview"></p>
+      <p class="error" id="treatment-error"></p>
+      <div class="actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn primary" value="save">Guardar</button></div>
+    </form>
+  </dialog>
+
+  <!-- Vista previa de importación -->
+  <dialog id="import-dialog">
+    <form method="dialog" id="import-form">
+      <h2>Subir lista de precios</h2>
+      <p id="import-summary"></p>
+      <div class="import-preview"><table class="list-table"><tbody id="import-preview"></tbody></table></div>
+      <label class="check"><input type="checkbox" name="replace"> Reemplazar toda la lista (borra los tratamientos que no estén en el archivo)</label>
+      <p class="muted">Si no lo marcás, se actualizan los códigos que ya existen y se agregan los nuevos.</p>
+      <p class="error" id="import-error"></p>
+      <div class="actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn primary" value="ok">Subir</button></div>
+    </form>
+  </dialog>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
