@@ -75,8 +75,8 @@
           <tbody id="rows"></tbody>
           <tfoot id="total" hidden>
             <tr>
-              <td></td>
-              <td class="total-label">TOTAL</td>
+              <td class="c-code"></td>
+              <td class="c-name total-label">TOTAL</td>
               <td class="money" data-t="lista"></td>
               <td class="money" data-t="efectivo"></td>
               <td class="money" data-t="transf"></td>
@@ -98,7 +98,7 @@
       <section class="search no-print">
         <h2>Buscar tratamiento</h2>
         <input id="search" type="search" placeholder="Escribí una palabra, por ejemplo: blanqueamiento">
-        <table class="list-table">
+        <table class="list-table cards">
           <thead><tr><th>Código</th><th>Tratamiento</th><th class="num" id="s-lista"></th><th class="num" id="s-ef"></th><th class="num" id="s-tr"></th><th class="num" id="s-6"></th><th></th></tr></thead>
           <tbody id="search-results"></tbody>
         </table>
@@ -124,7 +124,7 @@
           </div>
         </div>
         <p class="muted">El precio que se carga es el de <b>efectivo</b>. Los demás se calculan solos con los porcentajes.</p>
-        <table class="list-table">
+        <table class="list-table cards">
           <thead><tr><th>Código</th><th>Tratamiento</th><th>Categoría</th><th class="num">Efectivo</th><th class="num">Lista</th><th class="num">Transf.</th><th class="num">6 cuotas</th><th></th></tr></thead>
           <tbody id="admin-rows"></tbody>
         </table>
@@ -151,7 +151,7 @@
           <button class="btn primary">Crear usuario</button>
         </form>
         <p class="error" id="user-error"></p>
-        <table class="list-table">
+        <table class="list-table cards">
           <thead><tr><th>Usuario</th><th>Rol</th><th>Creado</th><th></th></tr></thead>
           <tbody id="user-rows"></tbody>
         </table>

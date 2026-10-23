@@ -116,10 +116,89 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
 
 .print-only { display: none; }
 
-@media (max-width: 700px) {
-  .sheet { padding: 16px; }
-  .sheet-foot { grid-template-columns: 1fr; }
-  .sheet-title { text-align: left; }
+/* Celular: las tablas pasan a tarjetas. No se aplica mientras se arma
+   la impresión (.printing), así el PDF sale igual desde cualquier pantalla. */
+@media screen and (max-width: 700px) {
+  body:not(.printing) .topbar { gap: .4rem; padding: .4rem 12px; }
+  body:not(.printing) .topbar-logo { height: 28px; }
+  body:not(.printing) .topbar nav { order: 3; flex-basis: 100%; overflow-x: auto; flex-wrap: nowrap; }
+  body:not(.printing) .who { margin-left: auto; }
+  body:not(.printing) #who-name { display: none; }
+  body:not(.printing) .panel { padding: 12px; }
+  body:not(.printing) .toolbar .btn { flex: 1 1 auto; }
+  body:not(.printing) .toolbar #print { flex-basis: 100%; padding: .75rem; }
+  body:not(.printing) .card { padding: 12px; }
+
+  body:not(.printing) .sheet { padding: 14px; overflow: visible; }
+  body:not(.printing) .sheet-head { padding-bottom: 10px; margin-bottom: 12px; }
+  body:not(.printing) .tab, body:not(.printing) .subtab { white-space: nowrap; }
+  body:not(.printing) .sheet-head { flex-wrap: nowrap; }
+  body:not(.printing) .sheet-logo { width: 110px; }
+  body:not(.printing) .sheet-title { text-align: right; }
+  body:not(.printing) .sheet-title h1 { font-size: 1.1rem; letter-spacing: .12em; }
+  body:not(.printing) .sheet-title p { font-size: .5rem; white-space: nowrap; }
+  body:not(.printing) .meta { display: grid; grid-template-columns: 1fr; gap: .6rem; }
+  body:not(.printing) .meta-field input { width: 100%; font-size: 16px; }
+  body:not(.printing) .meta-note { text-align: left; max-width: none; }
+  body:not(.printing) .sheet-foot { grid-template-columns: 1fr; }
+
+  /* Presupuesto: cada fila es una tarjeta */
+  body:not(.printing) .budget-table { min-width: 0; display: block; }
+  body:not(.printing) .budget-table thead { display: none; }
+  body:not(.printing) .budget-table tbody,
+  body:not(.printing) .budget-table tfoot { display: block; }
+  body:not(.printing) .budget-table tfoot[hidden] { display: none; }
+  body:not(.printing) .budget-table tr {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem;
+    grid-template-areas: "code x" "name name" "lista efectivo" "transf seis";
+    border: 1px solid var(--line); border-radius: 8px; padding: .6rem; margin-bottom: .6rem;
+  }
+  body:not(.printing) .budget-table td { border: 0; padding: 0; }
+  body:not(.printing) .budget-table .c-code { grid-area: code; width: auto; }
+  body:not(.printing) .budget-table .c-name { grid-area: name; font-weight: 600; }
+  body:not(.printing) .budget-table .c-x { grid-area: x; width: auto; text-align: right; }
+  body:not(.printing) .budget-table [data-k="lista"], body:not(.printing) .budget-table [data-t="lista"] { grid-area: lista; }
+  body:not(.printing) .budget-table [data-k="efectivo"], body:not(.printing) .budget-table [data-t="efectivo"] { grid-area: efectivo; }
+  body:not(.printing) .budget-table [data-k="transf"], body:not(.printing) .budget-table [data-t="transf"] { grid-area: transf; }
+  body:not(.printing) .budget-table [data-k="seis"], body:not(.printing) .budget-table [data-t="seis"] { grid-area: seis; }
+  body:not(.printing) .budget-table td.money { text-align: left; white-space: normal; background: var(--soft); border-radius: 6px; padding: .4rem .5rem; }
+  body:not(.printing) .budget-table td.money:empty { display: none; }
+  body:not(.printing) .budget-table tr.empty .c-name:empty { display: none; }
+  body:not(.printing) .code-input { width: 100%; font-size: 16px; }
+  body:not(.printing) .budget-table tfoot tr { border: 2px solid var(--accent); }
+  body:not(.printing) .budget-table tfoot td { border: 0; padding-top: 0; }
+  body:not(.printing) .budget-table tfoot td.money { padding: .4rem .5rem; }
+  body:not(.printing) .budget-table tfoot .c-code, body:not(.printing) .budget-table tfoot .c-x { display: none; }
+  body:not(.printing) .total-label { text-align: left; }
+
+  /* Listados (buscador, tratamientos, usuarios) como tarjetas */
+  body:not(.printing) .search { padding: 12px; }
+  body:not(.printing) .search > input { font-size: 16px; }
+  body:not(.printing) .list-table.cards thead { display: none; }
+  body:not(.printing) .list-table.cards, body:not(.printing) .list-table.cards tbody { display: block; }
+  body:not(.printing) .list-table.cards tr {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .75rem;
+    border: 1px solid var(--line); border-radius: 8px; padding: .6rem; margin-bottom: .5rem;
+  }
+  body:not(.printing) .list-table.cards tr.cat { border: 0; padding: .4rem 0 0; margin: .4rem 0 .2rem; }
+  body:not(.printing) .list-table.cards tr.cat td { background: none; padding: 0; }
+  body:not(.printing) .list-table.cards td { border: 0; padding: 0; grid-column: 1 / -1; }
+  body:not(.printing) .list-table.cards td[data-label] { grid-column: auto; text-align: left; }
+  body:not(.printing) .list-table.cards td.card-title:first-child { font-size: .8rem; color: var(--muted); }
+  body:not(.printing) .list-table.cards td.card-title + td.card-title { font-weight: 600; margin-top: -.25rem; }
+  body:not(.printing) .list-table.cards td.card-sub { font-size: .8rem; margin-top: -.25rem; }
+  body:not(.printing) .list-table.cards td.card-sub:empty { display: none; }
+  body:not(.printing) .list-table.cards td.card-actions { text-align: left; display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .3rem; }
+  body:not(.printing) .list-table.cards td.card-actions .btn { flex: 1; padding: .55rem; }
+  body:not(.printing) .list-table.cards td[colspan] { grid-column: 1 / -1; }
+
+  body:not(.printing) [data-label]::before { content: attr(data-label); display: block; font-size: .7rem; color: var(--muted); font-weight: 600; }
+
+  body:not(.printing) .row-between input { min-width: 0; width: 100%; font-size: 16px; }
+  body:not(.printing) .actions { justify-content: stretch; width: 100%; }
+  body:not(.printing) .actions .btn { flex: 1 1 auto; }
+  body:not(.printing) .inline-form > * { flex: 1 1 100%; font-size: 16px; }
+  body:not(.printing) .settings-grid { grid-template-columns: 1fr; }
 }
 
 /* Impresión: el presupuesto ocupa como máximo media hoja A4 (A5 apaisado,
