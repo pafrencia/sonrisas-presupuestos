@@ -65,10 +65,11 @@
             <tr>
               <th class="c-code">CÓDIGO</th>
               <th class="c-name">DETALLE</th>
-              <th id="h-lista"></th>
-              <th id="h-efectivo"></th>
-              <th id="h-transf"></th>
-              <th id="h-6"></th>
+              <th id="h-lista" class="col-lista"></th>
+              <th id="h-efectivo" class="col-efectivo"></th>
+              <th id="h-transf" class="col-transf"></th>
+              <th id="h-6" class="col-seis"></th>
+              <th id="h-12" class="col-doce"></th>
               <th class="no-print c-x"></th>
             </tr>
           </thead>
@@ -77,10 +78,11 @@
             <tr>
               <td class="c-code"></td>
               <td class="c-name total-label">TOTAL</td>
-              <td class="money" data-t="lista"></td>
-              <td class="money" data-t="efectivo"></td>
-              <td class="money" data-t="transf"></td>
-              <td class="money" data-t="seis"></td>
+              <td class="money col-lista" data-t="lista"></td>
+              <td class="money col-efectivo" data-t="efectivo"></td>
+              <td class="money col-transf" data-t="transf"></td>
+              <td class="money col-seis" data-t="seis"></td>
+              <td class="money col-doce" data-t="doce"></td>
               <td class="no-print c-x"></td>
             </tr>
           </tfoot>
@@ -99,7 +101,7 @@
         <h2>Buscar tratamiento</h2>
         <input id="search" type="search" placeholder="Escribí una palabra, por ejemplo: blanqueamiento">
         <table class="list-table cards">
-          <thead><tr><th>Código</th><th>Tratamiento</th><th class="num" id="s-lista"></th><th class="num" id="s-ef"></th><th class="num" id="s-tr"></th><th class="num" id="s-6"></th><th></th></tr></thead>
+          <thead><tr><th>Código</th><th>Tratamiento</th><th class="num col-lista" id="s-lista"></th><th class="num col-efectivo" id="s-ef"></th><th class="num col-transf" id="s-tr"></th><th class="num col-seis" id="s-6"></th><th class="num col-doce" id="s-12"></th><th></th></tr></thead>
           <tbody id="search-results"></tbody>
         </table>
       </section>
@@ -125,7 +127,7 @@
         </div>
         <p class="muted">El precio que se carga es el de <b>efectivo</b>. Los demás se calculan solos con los porcentajes.</p>
         <table class="list-table cards">
-          <thead><tr><th>Código</th><th>Tratamiento</th><th>Categoría</th><th class="num">Efectivo</th><th class="num">Lista</th><th class="num">Transf.</th><th class="num">6 cuotas</th><th></th></tr></thead>
+          <thead><tr><th>Código</th><th>Tratamiento</th><th>Categoría</th><th class="num">Efectivo</th><th class="num">Lista</th><th class="num">Transf.</th><th class="num">6 cuotas</th><th class="num">12 cuotas</th><th></th></tr></thead>
           <tbody id="admin-rows"></tbody>
         </table>
       </section>
@@ -135,8 +137,29 @@
           <label>Descuento efectivo (sobre lista) <span class="suffix"><input name="desc_efectivo" type="number" step="0.5" min="0" max="99"> %</span></label>
           <label>Descuento transferencia / QR / débito <span class="suffix"><input name="desc_transferencia" type="number" step="0.5" min="0" max="100"> %</span></label>
           <label>Recargo hasta 3 cuotas <span class="suffix"><input name="recargo_3_cuotas" type="number" step="0.5" min="0" max="100"> %</span></label>
-          <label>Recargo 6 cuotas <span class="suffix"><input name="recargo_6_cuotas" type="number" step="0.5" min="0" max="100"> %</span></label>
+          <label>Recargo 6 cuotas <span class="suffix"><input name="recargo_6_cuotas" type="number" step="0.5" min="0" max="300"> %</span></label>
+          <label>Recargo 12 cuotas <span class="suffix"><input name="recargo_12_cuotas" type="number" step="0.5" min="0" max="300"> %</span></label>
           <label>Validez del presupuesto <span class="suffix"><input name="validez_dias" type="number" step="1" min="1" max="365"> días</span></label>
+          <fieldset class="span2 visibility">
+            <legend>Qué se ve en el presupuesto</legend>
+            <p class="muted">Lo que destildes no aparece en pantalla ni en el PDF, para ningún usuario.</p>
+            <div class="checks">
+              <label class="check"><input type="checkbox" name="ver_codigo"> Columna código (al imprimir)</label>
+              <label class="check"><input type="checkbox" name="ver_nota_lista"> Aviso "precio de lista hasta 3 cuotas"</label>
+              <label class="check"><input type="checkbox" name="ver_lista"> Precio de lista (hasta 3 cuotas)</label>
+              <label class="check"><input type="checkbox" name="ver_cuotas_3"> Valor de cada una de las 3 cuotas</label>
+              <label class="check"><input type="checkbox" name="ver_efectivo"> Efectivo</label>
+              <label class="check"><input type="checkbox" name="ver_transf"> Transferencia / débito / QR</label>
+              <label class="check"><input type="checkbox" name="ver_6"> 6 cuotas</label>
+              <label class="check"><input type="checkbox" name="ver_cuotas_6"> Valor de cada una de las 6 cuotas</label>
+              <label class="check"><input type="checkbox" name="ver_12"> 12 cuotas</label>
+              <label class="check"><input type="checkbox" name="ver_cuotas_12"> Valor de cada una de las 12 cuotas</label>
+              <label class="check"><input type="checkbox" name="ver_total"> Fila de TOTAL</label>
+              <label class="check"><input type="checkbox" name="ver_recuadro_efectivo"> Recuadro "descuento en efectivo"</label>
+              <label class="check"><input type="checkbox" name="ver_recuadro_transf"> Recuadro "descuento transferencia"</label>
+              <label class="check"><input type="checkbox" name="ver_validez"> Texto de validez</label>
+            </div>
+          </fieldset>
           <p class="muted span2">Precio de lista = efectivo ÷ (1 − descuento efectivo). Ejemplo: con 20%, un tratamiento de $32.000 en efectivo tiene lista $40.000.</p>
           <p class="error span2" id="settings-error"></p>
           <div class="span2"><button class="btn primary">Guardar</button> <span class="ok" id="settings-ok"></span></div>

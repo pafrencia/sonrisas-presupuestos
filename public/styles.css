@@ -87,7 +87,9 @@ label { display: grid; gap: .3rem; font-size: .9rem; font-weight: 600; }
 .notfound { color: var(--danger); font-style: italic; }
 .hint { font-size: .8rem; color: var(--muted); margin: .4rem 0 0; }
 
-.sheet-foot { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; margin-top: 22px; }
+.sheet-foot { display: flex; gap: 12px; margin-top: 22px; }
+.sheet-foot > .badge { flex: 1; }
+.sheet-foot > .validity { flex: 2; }
 .badge { border-radius: 8px; padding: .8rem; font-weight: 700; text-align: center; font-size: .85rem; white-space: pre-line; display: grid; place-items: center; }
 .badge.green { background: var(--green); }
 .badge.violet { background: var(--violet); }
@@ -112,6 +114,9 @@ dialog { border: 0; border-radius: 12px; padding: 1.5rem; width: min(520px, calc
 dialog form { display: grid; gap: .8rem; }
 dialog::backdrop { background: rgba(20,30,40,.4); }
 .check { display: flex; gap: .5rem; align-items: center; font-weight: 400; }
+.visibility { border: 1px solid var(--line); border-radius: 8px; padding: .8rem 1rem; }
+.visibility legend { font-weight: 700; padding: 0 .3rem; }
+.visibility .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .4rem 1rem; }
 .import-preview { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
 
 .print-only { display: none; }
@@ -140,7 +145,7 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
   body:not(.printing) .meta { display: grid; grid-template-columns: 1fr; gap: .6rem; }
   body:not(.printing) .meta-field input { width: 100%; font-size: 16px; }
   body:not(.printing) .meta-note { text-align: left; max-width: none; }
-  body:not(.printing) .sheet-foot { grid-template-columns: 1fr; }
+  body:not(.printing) .sheet-foot { flex-direction: column; }
 
   /* Presupuesto: cada fila es una tarjeta */
   body:not(.printing) .budget-table { min-width: 0; display: block; }
@@ -150,17 +155,12 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
   body:not(.printing) .budget-table tfoot[hidden] { display: none; }
   body:not(.printing) .budget-table tr {
     display: grid; grid-template-columns: 1fr 1fr; gap: .35rem .75rem;
-    grid-template-areas: "code x" "name name" "lista efectivo" "transf seis";
     border: 1px solid var(--line); border-radius: 8px; padding: .6rem; margin-bottom: .6rem;
   }
   body:not(.printing) .budget-table td { border: 0; padding: 0; }
-  body:not(.printing) .budget-table .c-code { grid-area: code; width: auto; }
-  body:not(.printing) .budget-table .c-name { grid-area: name; font-weight: 600; }
-  body:not(.printing) .budget-table .c-x { grid-area: x; width: auto; text-align: right; }
-  body:not(.printing) .budget-table [data-k="lista"], body:not(.printing) .budget-table [data-t="lista"] { grid-area: lista; }
-  body:not(.printing) .budget-table [data-k="efectivo"], body:not(.printing) .budget-table [data-t="efectivo"] { grid-area: efectivo; }
-  body:not(.printing) .budget-table [data-k="transf"], body:not(.printing) .budget-table [data-t="transf"] { grid-area: transf; }
-  body:not(.printing) .budget-table [data-k="seis"], body:not(.printing) .budget-table [data-t="seis"] { grid-area: seis; }
+  body:not(.printing) .budget-table .c-code { grid-column: 1; grid-row: 1; width: auto; }
+  body:not(.printing) .budget-table .c-x { grid-column: 2; grid-row: 1; width: auto; text-align: right; }
+  body:not(.printing) .budget-table .c-name { grid-column: 1 / -1; font-weight: 600; }
   body:not(.printing) .budget-table td.money { text-align: left; white-space: normal; background: var(--soft); border-radius: 6px; padding: .4rem .5rem; }
   body:not(.printing) .budget-table td.money:empty { display: none; }
   body:not(.printing) .budget-table tr.empty .c-name:empty { display: none; }
@@ -225,7 +225,7 @@ body.printing .budget-table tfoot td { padding-top: 1.6mm; }
 body.printing .budget-table tr.empty { display: none; }
 body.printing .c-code { width: 13mm; }
 body.printing .code-input { width: 100%; border: 0; background: none; padding: 0; font-size: 8pt; }
-body.printing .sheet-foot { margin-top: 4mm; gap: 2.5mm; grid-template-columns: 1fr 1fr 2fr; }
+body.printing .sheet-foot { margin-top: 4mm; gap: 2.5mm; flex-direction: row; }
 body.printing .badge, body.printing .validity { padding: 2mm; font-size: 7pt; border-radius: 4px; }
 
 @media print {
