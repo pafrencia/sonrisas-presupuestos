@@ -78,6 +78,9 @@ label { display: grid; gap: .3rem; font-size: .9rem; font-weight: 600; }
 .budget-table td { border-bottom: 1px solid var(--line); padding: .45rem .4rem; vertical-align: top; }
 .budget-table td.money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .budget-table td.money small { display: block; color: var(--muted); font-size: .75rem; }
+.budget-table tfoot td { border-top: 2px solid var(--accent); border-bottom: 0; font-weight: 700; padding-top: .6rem; }
+.budget-table tfoot td.money small { font-weight: 400; }
+.total-label { text-align: right; letter-spacing: .1em; color: var(--accent); }
 .c-code { width: 90px; }
 .c-x { width: 32px; background: transparent !important; }
 .code-input { width: 76px; background: var(--code-bg); text-align: center; font-weight: 600; }
@@ -119,15 +122,38 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
   .sheet-title { text-align: left; }
 }
 
+/* Impresión: el presupuesto ocupa como máximo media hoja A4 (A5 apaisado,
+   210 × 148,5 mm) en la mitad de arriba, para imprimir dos por hoja y cortar.
+   La clase .printing la pone app.js antes de imprimir; si el contenido no
+   entra, app.js lo achica con --print-zoom. */
+body.printing .no-print, body.printing .hint { display: none !important; }
+body.printing .print-only { display: inline; }
+body.printing .sheet { width: 210mm; height: 148.5mm; padding: 7mm 10mm; border: 0; border-radius: 0; border-bottom: 1px dashed #b8c0c6; overflow: hidden; font-size: 8.5pt; }
+body.printing .sheet-inner { width: calc(190mm / var(--print-zoom, 1)); zoom: var(--print-zoom, 1); }
+body.printing .sheet-head { padding-bottom: 2.5mm; margin-bottom: 3mm; border-bottom-width: 2px; flex-wrap: nowrap; }
+body.printing .sheet-logo { width: 40mm; }
+body.printing .sheet-title h1 { font-size: 17pt; }
+body.printing .sheet-title p { font-size: 6.5pt; }
+body.printing .meta { margin-bottom: 2.5mm; gap: 6mm; flex-wrap: nowrap; }
+body.printing .meta-field span { font-size: 6.5pt; }
+body.printing .meta-field b { font-size: 9.5pt; }
+body.printing .meta-note { font-size: 6.5pt; max-width: 60mm; }
+body.printing .budget-table { min-width: 0; }
+body.printing .budget-table th { font-size: 6.5pt; padding: 1.3mm 1mm; }
+body.printing .budget-table td { padding: 1.2mm 1mm; font-size: 8pt; }
+body.printing .budget-table td.money small { font-size: 6.5pt; }
+body.printing .budget-table tfoot td { padding-top: 1.6mm; }
+body.printing .budget-table tr.empty { display: none; }
+body.printing .c-code { width: 13mm; }
+body.printing .code-input { width: 100%; border: 0; background: none; padding: 0; font-size: 8pt; }
+body.printing .sheet-foot { margin-top: 4mm; gap: 2.5mm; grid-template-columns: 1fr 1fr 2fr; }
+body.printing .badge, body.printing .validity { padding: 2mm; font-size: 7pt; border-radius: 4px; }
+
 @media print {
-  @page { size: A4; margin: 12mm; }
+  @page { size: A4 portrait; margin: 0; }
   body { background: #fff; }
   .no-print, .topbar, .search, .hint { display: none !important; }
   .print-only { display: inline; }
-  .panel { padding: 0; max-width: none; }
-  .sheet { border: 0; padding: 0; overflow: visible; }
-  .budget-table { min-width: 0; }
-  .budget-table tr.empty { display: none; }
-  .code-input { border: 0; background: none; }
+  .panel { padding: 0; margin: 0; max-width: none; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

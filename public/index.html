@@ -43,6 +43,7 @@
       </div>
 
       <article class="sheet" id="budget">
+        <div class="sheet-inner">
         <div class="sheet-head">
           <img src="logo.jpg" alt="Sonrisas Perfectas Odontología" class="sheet-logo">
           <div class="sheet-title">
@@ -72,6 +73,17 @@
             </tr>
           </thead>
           <tbody id="rows"></tbody>
+          <tfoot id="total" hidden>
+            <tr>
+              <td></td>
+              <td class="total-label">TOTAL</td>
+              <td class="money" data-t="lista"></td>
+              <td class="money" data-t="efectivo"></td>
+              <td class="money" data-t="transf"></td>
+              <td class="money" data-t="seis"></td>
+              <td class="no-print c-x"></td>
+            </tr>
+          </tfoot>
         </table>
         <p class="hint no-print">Escribí el código o buscá el tratamiento abajo. Las filas sin código no se imprimen.</p>
 
@@ -79,6 +91,7 @@
           <div class="badge green" id="badge-efectivo"></div>
           <div class="badge violet" id="badge-transf"></div>
           <p class="validity" id="validity"></p>
+        </div>
         </div>
       </article>
 
