@@ -287,6 +287,21 @@ $('#print').addEventListener('click', () => {
   document.title = prev;
 });
 
+// Antes de imprimir arma la hoja de media A4 y, si no entra, la achica.
+const MM = 96 / 25.4;
+window.addEventListener('beforeprint', () => {
+  document.activeElement?.blur();
+  syncMeta();
+  document.body.classList.add('printing');
+  const sheet = $('#budget');
+  const inner = sheet.querySelector('.sheet-inner');
+  sheet.style.setProperty('--print-zoom', 1);
+  const available = 134.5 * MM; // 148,5 mm menos los 7 mm de margen arriba y abajo
+  const zoom = Math.min(1, available / inner.scrollHeight);
+  sheet.style.setProperty('--print-zoom', zoom.toFixed(3));
+});
+window.addEventListener('afterprint', () => document.body.classList.remove('printing'));
+
 // Buscador
 function matches(t, q) {
   const words = norm(q).split(/\s+/).filter(Boolean);
