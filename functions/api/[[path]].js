@@ -5,7 +5,8 @@ const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers } });
 const fail = (status, error) => json({ error }, status);
 
-const PERCENT_KEYS = ['desc_efectivo', 'desc_transferencia', 'recargo_3_cuotas', 'recargo_6_cuotas'];
+const PERCENT_KEYS = ['desc_efectivo', 'desc_transferencia', 'recargo_3_cuotas', 'recargo_6_cuotas', 'recargo_12_cuotas'];
+const VISIBILITY_KEYS = Object.keys(DEFAULT_SETTINGS).filter((k) => k.startsWith('ver_'));
 
 function cleanTreatment(t) {
   const code = String(t.code ?? '').trim();
@@ -97,9 +98,12 @@ export async function onRequest({ request, env, params }) {
     for (const key of [...PERCENT_KEYS, 'validez_dias']) {
       if (!(key in body)) continue;
       const v = Number(body[key]);
-      const max = key === 'desc_efectivo' ? 99 : key === 'validez_dias' ? 365 : 100;
+      const max = key === 'desc_efectivo' ? 99 : key === 'validez_dias' ? 365 : key.startsWith('recargo') ? 300 : 100;
       if (!Number.isFinite(v) || v < 0 || v > max) return fail(400, `Valor inválido para ${key}`);
       stmts.push(db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').bind(key, String(v)));
+    }
+    for (const key of VISIBILITY_KEYS) {
+      if (key in body) stmts.push(db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').bind(key, body[key] ? '1' : '0'));
     }
     if (stmts.length) await db.batch(stmts);
     return json({ settings: await readSettings(db) });

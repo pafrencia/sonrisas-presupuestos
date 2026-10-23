@@ -36,7 +36,48 @@ function prices(efectivo) {
     lista: lista * (1 + s.recargo_3_cuotas / 100),
     transf: lista * (1 - s.desc_transferencia / 100),
     seis: lista * (1 + s.recargo_6_cuotas / 100),
+    doce: lista * (1 + s.recargo_12_cuotas / 100),
   };
+}
+
+// Columnas que se pagan en cuotas y en cuántas.
+const CUOTAS = { lista: 3, seis: 6, doce: 12 };
+const PRICE_KEYS = ['lista', 'efectivo', 'transf', 'seis', 'doce'];
+
+function priceHtml(k, value) {
+  const n = CUOTAS[k];
+  return n ? `${money(value)}<small class="cuota-${n}">${n} cuotas de ${money(value / n)}</small>` : money(value);
+}
+
+// Partes del presupuesto que el administrador puede ocultar.
+const VISIBILITY = {
+  ver_codigo: 'body.printing .budget-table .c-code', // se sigue escribiendo, solo no se imprime
+  ver_nota_lista: '#lista-note',
+  ver_lista: '.col-lista',
+  ver_cuotas_3: '.cuota-3',
+  ver_efectivo: '.col-efectivo',
+  ver_transf: '.col-transf',
+  ver_6: '.col-seis',
+  ver_cuotas_6: '.cuota-6',
+  ver_12: '.col-doce',
+  ver_cuotas_12: '.cuota-12',
+  ver_total: '#total',
+  ver_recuadro_efectivo: '#badge-efectivo',
+  ver_recuadro_transf: '#badge-transf',
+  ver_validez: '#validity',
+};
+
+function applyVisibility() {
+  const css = Object.entries(VISIBILITY)
+    .filter(([k]) => !state.settings[k])
+    .map(([, sel]) => `${sel} { display: none !important; }`)
+    .join('\n');
+  let style = $('#visibility-style');
+  if (!style) {
+    style = Object.assign(document.createElement('style'), { id: 'visibility-style' });
+    document.head.append(style);
+  }
+  style.textContent = css;
 }
 
 function findTreatment(raw) {
@@ -141,6 +182,7 @@ function priceLabels() {
     efectivo: `Efectivo -${pct(s.desc_efectivo)}`,
     transf: `Transf. / QR / Déb. -${pct(s.desc_transferencia)}`,
     seis: `6 cuotas +${pct(s.recargo_6_cuotas)}`,
+    doce: `12 cuotas +${pct(s.recargo_12_cuotas)}`,
   };
 }
 
@@ -151,6 +193,7 @@ function renderLabels() {
   $('#h-efectivo').innerHTML = `EFECTIVO<small>${pct(s.desc_efectivo)} de descuento</small>`;
   $('#h-transf').innerHTML = `TRANSFERENCIA / DÉBITO / QR<small>${pct(s.desc_transferencia)} de descuento</small>`;
   $('#h-6').innerHTML = `6 CUOTAS<small>recargo ${pct(s.recargo_6_cuotas)} (valor total)</small>`;
+  $('#h-12').innerHTML = `12 CUOTAS<small>recargo ${pct(s.recargo_12_cuotas)} (valor total)</small>`;
   $('#lista-note').innerHTML = `PRECIO DE LISTA: HASTA 3 CUOTAS ${r3.toUpperCase()}<br>con cualquier tarjeta de crédito`;
   $('#badge-efectivo').textContent = `${pct(s.desc_efectivo)} DE DESCUENTO\nEN EFECTIVO`;
   $('#badge-transf').textContent = `${pct(s.desc_transferencia)} DE DESCUENTO\nTRANSFERENCIA / QR / DÉBITO`;
@@ -159,6 +202,8 @@ function renderLabels() {
   $('#s-ef').textContent = `Efectivo -${pct(s.desc_efectivo)}`;
   $('#s-tr').textContent = `Transf. / Déb. -${pct(s.desc_transferencia)}`;
   $('#s-6').textContent = `6 cuotas +${pct(s.recargo_6_cuotas)}`;
+  $('#s-12').textContent = `12 cuotas +${pct(s.recargo_12_cuotas)}`;
+  applyVisibility();
 }
 
 function addRow(code = '') {
@@ -166,10 +211,7 @@ function addRow(code = '') {
   tr.innerHTML = `
     <td class="c-code"><input class="code-input" value="${esc(code)}" aria-label="Código"></td>
     <td class="c-name"></td>
-    <td class="money" data-k="lista"></td>
-    <td class="money" data-k="efectivo"></td>
-    <td class="money" data-k="transf"></td>
-    <td class="money" data-k="seis"></td>
+${PRICE_KEYS.map((k) => `    <td class="money col-${k}" data-k="${k}"></td>`).join('\n')}
     <td class="no-print c-x"><button class="btn link small" title="Quitar fila" aria-label="Quitar fila">✕</button></td>`;
   const input = tr.querySelector('input');
   input.addEventListener('input', () => { updateRow(tr); saveDraft(); });
@@ -204,21 +246,17 @@ function renderTotal() {
   const found = $$('#rows input').map((i) => findTreatment(i.value)).filter(Boolean);
   $('#total').hidden = !found.length;
   if (!found.length) return;
-  const sum = { lista: 0, efectivo: 0, transf: 0, seis: 0 };
+  const sum = Object.fromEntries(PRICE_KEYS.map((k) => [k, 0]));
   for (const t of found) {
     const p = prices(t.efectivo);
     for (const k in sum) sum[k] += p[k];
   }
   const labels = priceLabels();
-  const cell = (k) => {
+  for (const k of PRICE_KEYS) {
     const td = $(`#total [data-t="${k}"]`);
     td.dataset.label = labels[k];
-    return td;
-  };
-  cell('lista').innerHTML = `${money(sum.lista)}<small>3 cuotas de ${money(sum.lista / 3)}</small>`;
-  cell('efectivo').textContent = money(sum.efectivo);
-  cell('transf').textContent = money(sum.transf);
-  cell('seis').innerHTML = `${money(sum.seis)}<small>6 cuotas de ${money(sum.seis / 6)}</small>`;
+    td.innerHTML = priceHtml(k, sum[k]);
+  }
 }
 
 function updateRowCells(tr) {
@@ -233,12 +271,11 @@ function updateRowCells(tr) {
   }
   const p = prices(t.efectivo);
   const labels = priceLabels();
-  for (const k in cells) cells[k].dataset.label = labels[k];
   tr.querySelector('.c-name').textContent = t.name;
-  cells.lista.innerHTML = `${money(p.lista)}<small>3 cuotas de ${money(p.lista / 3)}</small>`;
-  cells.efectivo.textContent = money(p.efectivo);
-  cells.transf.textContent = money(p.transf);
-  cells.seis.innerHTML = `${money(p.seis)}<small>6 cuotas de ${money(p.seis / 6)}</small>`;
+  for (const k in cells) {
+    cells[k].dataset.label = labels[k];
+    cells[k].innerHTML = priceHtml(k, p[k]);
+  }
 }
 
 function refreshRows() {
@@ -331,7 +368,7 @@ function renderSearch() {
   const q = $('#search').value.trim();
   const tbody = $('#search-results');
   if (!q) {
-    tbody.innerHTML = '<tr><td colspan="7" class="muted">Escribí para buscar entre los tratamientos.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="muted">Escribí para buscar entre los tratamientos.</td></tr>';
     return;
   }
   const found = state.treatments.filter((t) => matches(t, q));
@@ -339,10 +376,10 @@ function renderSearch() {
     ? found.map((t) => {
         const p = prices(t.efectivo);
         const l = priceLabels();
-        return `<tr><td class="card-title"><b>${esc(t.code)}</b></td><td class="card-title">${esc(t.name)}</td><td class="num" data-label="${l.lista}">${money(p.lista)}</td><td class="num" data-label="${l.efectivo}">${money(p.efectivo)}</td><td class="num" data-label="${l.transf}">${money(p.transf)}</td><td class="num" data-label="${l.seis}">${money(p.seis)}</td>
+        return `<tr><td class="card-title"><b>${esc(t.code)}</b></td><td class="card-title">${esc(t.name)}</td>${PRICE_KEYS.map((k) => `<td class="num col-${k}" data-label="${l[k]}">${money(p[k])}</td>`).join('')}
           <td class="card-actions"><button class="btn small primary" data-add="${esc(t.code)}">Agregar</button></td></tr>`;
       }).join('')
-    : '<tr><td colspan="7" class="muted">Sin resultados</td></tr>';
+    : '<tr><td colspan="8" class="muted">Sin resultados</td></tr>';
 }
 $('#search').addEventListener('input', renderSearch);
 $('#search-results').addEventListener('click', (e) => {
@@ -359,15 +396,15 @@ function renderAdminTreatments() {
   for (const t of list) {
     if (!q && t.category !== lastCat) {
       lastCat = t.category;
-      html.push(`<tr class="cat"><td colspan="8">${esc(t.category || 'Sin categoría')}</td></tr>`);
+      html.push(`<tr class="cat"><td colspan="9">${esc(t.category || 'Sin categoría')}</td></tr>`);
     }
     const p = prices(t.efectivo);
     const l = priceLabels();
     html.push(`<tr><td class="card-title"><b>${esc(t.code)}</b></td><td class="card-title">${esc(t.name)}</td><td class="muted card-sub">${esc(t.category)}</td>
-      <td class="num" data-label="${l.efectivo}">${money(p.efectivo)}</td><td class="num" data-label="${l.lista}">${money(p.lista)}</td><td class="num" data-label="${l.transf}">${money(p.transf)}</td><td class="num" data-label="${l.seis}">${money(p.seis)}</td>
+      <td class="num" data-label="${l.efectivo}">${money(p.efectivo)}</td><td class="num" data-label="${l.lista}">${money(p.lista)}</td><td class="num" data-label="${l.transf}">${money(p.transf)}</td><td class="num" data-label="${l.seis}">${money(p.seis)}</td><td class="num" data-label="${l.doce}">${money(p.doce)}</td>
       <td class="num card-actions"><button class="btn small" data-edit="${esc(t.code)}">Editar</button> <button class="btn small danger" data-del="${esc(t.code)}">Borrar</button></td></tr>`);
   }
-  $('#admin-rows').innerHTML = html.join('') || '<tr><td colspan="8" class="muted">No hay tratamientos.</td></tr>';
+  $('#admin-rows').innerHTML = html.join('') || '<tr><td colspan="9" class="muted">No hay tratamientos.</td></tr>';
   $('#categories').innerHTML = [...new Set(state.treatments.map((t) => t.category).filter(Boolean))].map((c) => `<option value="${esc(c)}">`).join('');
 }
 $('#admin-search').addEventListener('input', renderAdminTreatments);
@@ -400,7 +437,7 @@ function updatePreview() {
   const v = Number($('#treatment-form').efectivo.value);
   if (!v) { $('#treatment-preview').textContent = ''; return; }
   const p = prices(v);
-  $('#treatment-preview').textContent = `Lista ${money(p.lista)} · Transferencia ${money(p.transf)} · 6 cuotas ${money(p.seis)}`;
+  $('#treatment-preview').textContent = `Lista ${money(p.lista)} · Transferencia ${money(p.transf)} · 6 cuotas ${money(p.seis)} · 12 cuotas ${money(p.doce)}`;
 }
 $('#treatment-form').efectivo.addEventListener('input', updatePreview);
 
@@ -537,13 +574,18 @@ $('#import-form').addEventListener('submit', async (e) => {
 // ---------- Administración: porcentajes ----------
 function fillSettingsForm() {
   const f = $('#settings-form');
-  for (const [k, v] of Object.entries(state.settings)) if (f[k]) f[k].value = v;
+  for (const [k, v] of Object.entries(state.settings)) {
+    if (!f[k]) continue;
+    if (f[k].type === 'checkbox') f[k].checked = !!v;
+    else f[k].value = v;
+  }
   $('#settings-error').textContent = '';
   $('#settings-ok').textContent = '';
 }
 $('#settings-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = Object.fromEntries(new FormData(e.target));
+  for (const box of e.target.querySelectorAll('input[type=checkbox]')) body[box.name] = box.checked ? 1 : 0;
   $('#settings-error').textContent = '';
   try {
     const r = await api('settings', { method: 'PUT', body });

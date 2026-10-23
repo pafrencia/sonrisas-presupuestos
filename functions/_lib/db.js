@@ -31,7 +31,23 @@ export const DEFAULT_SETTINGS = {
   desc_transferencia: '10',
   recargo_3_cuotas: '0',
   recargo_6_cuotas: '10',
+  recargo_12_cuotas: '20',
   validez_dias: '30',
+  // Qué partes se ven en el presupuesto (1 = se ve, 0 = oculto).
+  ver_codigo: '1',
+  ver_nota_lista: '1',
+  ver_lista: '1',
+  ver_cuotas_3: '1',
+  ver_efectivo: '1',
+  ver_transf: '1',
+  ver_6: '1',
+  ver_cuotas_6: '1',
+  ver_12: '0',
+  ver_cuotas_12: '1',
+  ver_total: '1',
+  ver_recuadro_efectivo: '1',
+  ver_recuadro_transf: '1',
+  ver_validez: '1',
 };
 
 let ready = false;
