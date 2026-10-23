@@ -133,6 +133,17 @@ $$('.subtab').forEach((b) =>
 );
 
 // ---------- Presupuesto ----------
+// Títulos cortos de cada precio, para la vista de celular.
+function priceLabels() {
+  const s = state.settings;
+  return {
+    lista: 'Lista / 3 cuotas',
+    efectivo: `Efectivo -${pct(s.desc_efectivo)}`,
+    transf: `Transf. / QR / Déb. -${pct(s.desc_transferencia)}`,
+    seis: `6 cuotas +${pct(s.recargo_6_cuotas)}`,
+  };
+}
+
 function renderLabels() {
   const s = state.settings;
   const r3 = s.recargo_3_cuotas ? `recargo ${pct(s.recargo_3_cuotas)}` : 'sin interés';
@@ -198,7 +209,12 @@ function renderTotal() {
     const p = prices(t.efectivo);
     for (const k in sum) sum[k] += p[k];
   }
-  const cell = (k) => $(`#total [data-t="${k}"]`);
+  const labels = priceLabels();
+  const cell = (k) => {
+    const td = $(`#total [data-t="${k}"]`);
+    td.dataset.label = labels[k];
+    return td;
+  };
   cell('lista').innerHTML = `${money(sum.lista)}<small>3 cuotas de ${money(sum.lista / 3)}</small>`;
   cell('efectivo').textContent = money(sum.efectivo);
   cell('transf').textContent = money(sum.transf);
@@ -216,6 +232,8 @@ function updateRowCells(tr) {
     return;
   }
   const p = prices(t.efectivo);
+  const labels = priceLabels();
+  for (const k in cells) cells[k].dataset.label = labels[k];
   tr.querySelector('.c-name').textContent = t.name;
   cells.lista.innerHTML = `${money(p.lista)}<small>3 cuotas de ${money(p.lista / 3)}</small>`;
   cells.efectivo.textContent = money(p.efectivo);
@@ -320,8 +338,9 @@ function renderSearch() {
   tbody.innerHTML = found.length
     ? found.map((t) => {
         const p = prices(t.efectivo);
-        return `<tr><td><b>${esc(t.code)}</b></td><td>${esc(t.name)}</td><td class="num">${money(p.lista)}</td><td class="num">${money(p.efectivo)}</td><td class="num">${money(p.transf)}</td><td class="num">${money(p.seis)}</td>
-          <td><button class="btn small primary" data-add="${esc(t.code)}">Agregar</button></td></tr>`;
+        const l = priceLabels();
+        return `<tr><td class="card-title"><b>${esc(t.code)}</b></td><td class="card-title">${esc(t.name)}</td><td class="num" data-label="${l.lista}">${money(p.lista)}</td><td class="num" data-label="${l.efectivo}">${money(p.efectivo)}</td><td class="num" data-label="${l.transf}">${money(p.transf)}</td><td class="num" data-label="${l.seis}">${money(p.seis)}</td>
+          <td class="card-actions"><button class="btn small primary" data-add="${esc(t.code)}">Agregar</button></td></tr>`;
       }).join('')
     : '<tr><td colspan="7" class="muted">Sin resultados</td></tr>';
 }
@@ -343,9 +362,10 @@ function renderAdminTreatments() {
       html.push(`<tr class="cat"><td colspan="8">${esc(t.category || 'Sin categoría')}</td></tr>`);
     }
     const p = prices(t.efectivo);
-    html.push(`<tr><td><b>${esc(t.code)}</b></td><td>${esc(t.name)}</td><td class="muted">${esc(t.category)}</td>
-      <td class="num">${money(p.efectivo)}</td><td class="num">${money(p.lista)}</td><td class="num">${money(p.transf)}</td><td class="num">${money(p.seis)}</td>
-      <td class="num"><button class="btn small" data-edit="${esc(t.code)}">Editar</button> <button class="btn small danger" data-del="${esc(t.code)}">Borrar</button></td></tr>`);
+    const l = priceLabels();
+    html.push(`<tr><td class="card-title"><b>${esc(t.code)}</b></td><td class="card-title">${esc(t.name)}</td><td class="muted card-sub">${esc(t.category)}</td>
+      <td class="num" data-label="${l.efectivo}">${money(p.efectivo)}</td><td class="num" data-label="${l.lista}">${money(p.lista)}</td><td class="num" data-label="${l.transf}">${money(p.transf)}</td><td class="num" data-label="${l.seis}">${money(p.seis)}</td>
+      <td class="num card-actions"><button class="btn small" data-edit="${esc(t.code)}">Editar</button> <button class="btn small danger" data-del="${esc(t.code)}">Borrar</button></td></tr>`);
   }
   $('#admin-rows').innerHTML = html.join('') || '<tr><td colspan="8" class="muted">No hay tratamientos.</td></tr>';
   $('#categories').innerHTML = [...new Set(state.treatments.map((t) => t.category).filter(Boolean))].map((c) => `<option value="${esc(c)}">`).join('');
@@ -542,10 +562,10 @@ $('#settings-form').addEventListener('submit', async (e) => {
 async function loadUsers() {
   const { users } = await api('users');
   $('#user-rows').innerHTML = users.map((u) => `<tr>
-    <td><b>${esc(u.username)}</b>${u.id === state.user.id ? ' <span class="muted">(vos)</span>' : ''}</td>
-    <td><select data-role="${u.id}"><option value="user"${u.role === 'user' ? ' selected' : ''}>Usuario común</option><option value="admin"${u.role === 'admin' ? ' selected' : ''}>Administrador</option></select></td>
-    <td class="muted">${esc(fmtDate(u.created_at.slice(0, 10)))}</td>
-    <td class="num"><button class="btn small" data-pass="${u.id}">Cambiar contraseña</button>
+    <td class="card-title"><b>${esc(u.username)}</b>${u.id === state.user.id ? ' <span class="muted">(vos)</span>' : ''}</td>
+    <td data-label="Rol"><select data-role="${u.id}"><option value="user"${u.role === 'user' ? ' selected' : ''}>Usuario común</option><option value="admin"${u.role === 'admin' ? ' selected' : ''}>Administrador</option></select></td>
+    <td class="muted" data-label="Creado">${esc(fmtDate(u.created_at.slice(0, 10)))}</td>
+    <td class="num card-actions"><button class="btn small" data-pass="${u.id}">Cambiar contraseña</button>
       ${u.id === state.user.id ? '' : `<button class="btn small danger" data-deluser="${u.id}" data-name="${esc(u.username)}">Borrar</button>`}</td></tr>`).join('');
 }
 
