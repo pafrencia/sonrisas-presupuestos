@@ -78,6 +78,9 @@ label { display: grid; gap: .3rem; font-size: .9rem; font-weight: 600; }
 .budget-table td { border-bottom: 1px solid var(--line); padding: .45rem .4rem; vertical-align: top; }
 .budget-table td.money { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .budget-table td.money small { display: block; color: var(--muted); font-size: .75rem; }
+.budget-table tfoot td { border-top: 2px solid var(--accent); border-bottom: 0; font-weight: 700; padding-top: .6rem; }
+.budget-table tfoot td.money small { font-weight: 400; }
+.total-label { text-align: right; letter-spacing: .1em; color: var(--accent); }
 .c-code { width: 90px; }
 .c-x { width: 32px; background: transparent !important; }
 .code-input { width: 76px; background: var(--code-bg); text-align: center; font-weight: 600; }

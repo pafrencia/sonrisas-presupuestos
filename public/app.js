@@ -184,6 +184,28 @@ function addRow(code = '') {
 }
 
 function updateRow(tr) {
+  updateRowCells(tr);
+  renderTotal();
+}
+
+// Suma las filas con código válido, como una última fila del presupuesto.
+function renderTotal() {
+  const found = $$('#rows input').map((i) => findTreatment(i.value)).filter(Boolean);
+  $('#total').hidden = !found.length;
+  if (!found.length) return;
+  const sum = { lista: 0, efectivo: 0, transf: 0, seis: 0 };
+  for (const t of found) {
+    const p = prices(t.efectivo);
+    for (const k in sum) sum[k] += p[k];
+  }
+  const cell = (k) => $(`#total [data-t="${k}"]`);
+  cell('lista').innerHTML = `${money(sum.lista)}<small>3 cuotas de ${money(sum.lista / 3)}</small>`;
+  cell('efectivo').textContent = money(sum.efectivo);
+  cell('transf').textContent = money(sum.transf);
+  cell('seis').innerHTML = `${money(sum.seis)}<small>6 cuotas de ${money(sum.seis / 6)}</small>`;
+}
+
+function updateRowCells(tr) {
   const raw = tr.querySelector('input').value.trim();
   const t = findTreatment(raw);
   const cells = Object.fromEntries([...tr.querySelectorAll('[data-k]')].map((td) => [td.dataset.k, td]));
