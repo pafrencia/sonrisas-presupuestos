@@ -87,9 +87,11 @@ label { display: grid; gap: .3rem; font-size: .9rem; font-weight: 600; }
 /* Cada celda alineada igual que su título, con separadores entre columnas */
 .budget-table th.c-name, .budget-table td.c-name { text-align: left; }
 .budget-table td.c-code { text-align: center; }
-.budget-table th + th { border-left: 1px solid rgba(255, 255, 255, .35); }
-.budget-table td + td { border-left: 1px solid var(--line); }
-.budget-table .c-x { border-left: 0 !important; }
+.budget-table th { border: 1px solid var(--accent); }
+.budget-table th + th { box-shadow: inset 1px 0 rgba(255, 255, 255, .35); }
+.budget-table td { border: 1px solid var(--line); }
+.budget-table tfoot td { border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); }
+.budget-table .c-x { border: 0 !important; }
 .notfound { color: var(--danger); font-style: italic; }
 .hint { font-size: .8rem; color: var(--muted); margin: .4rem 0 0; }
 
