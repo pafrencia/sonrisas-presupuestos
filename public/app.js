@@ -203,6 +203,7 @@ function renderLabels() {
   $('#s-tr').textContent = `Transf. / Déb. -${pct(s.desc_transferencia)}`;
   $('#s-6').textContent = `6 cuotas +${pct(s.recargo_6_cuotas)}`;
   $('#s-12').textContent = `12 cuotas +${pct(s.recargo_12_cuotas)}`;
+  $('#show-total-label').hidden = !s.ver_total;
   applyVisibility();
 }
 
@@ -244,7 +245,8 @@ function updateRow(tr) {
 // Suma las filas con código válido, como una última fila del presupuesto.
 function renderTotal() {
   const found = $$('#rows input').map((i) => findTreatment(i.value)).filter(Boolean);
-  $('#total').hidden = !found.length;
+  // El TOTAL se puede quitar en cada presupuesto (casilla junto a los botones).
+  $('#total').hidden = !found.length || !$('#show-total').checked;
   if (!found.length) return;
   const sum = Object.fromEntries(PRICE_KEYS.map((k) => [k, 0]));
   for (const t of found) {
@@ -309,6 +311,7 @@ function saveDraft() {
       fecha: $('#fecha').value,
       paciente: $('#paciente').value,
       codes: $$('#rows input').map((i) => i.value),
+      showTotal: $('#show-total').checked,
     }));
   } catch {}
 }
@@ -320,6 +323,7 @@ function restoreDraft() {
   // La fecha es siempre la de hoy al abrir, como en la planilla.
   $('#fecha').value = today();
   $('#paciente').value = d?.paciente || '';
+  $('#show-total').checked = d?.showTotal ?? true;
   const codes = d?.codes?.length ? d.codes : [];
   for (let i = 0; i < Math.max(DEFAULT_ROWS, codes.length); i++) addRow(codes[i] || '');
   syncMeta();
@@ -327,6 +331,7 @@ function restoreDraft() {
 
 $('#fecha').addEventListener('input', saveDraft);
 $('#paciente').addEventListener('input', saveDraft);
+$('#show-total').addEventListener('change', () => { renderTotal(); saveDraft(); });
 $('#add-row').addEventListener('click', () => { addRow().querySelector('input').focus(); saveDraft(); });
 $('#clear').addEventListener('click', () => {
   if (!confirm('¿Empezar un presupuesto nuevo? Se borran los códigos y el paciente.')) return;
@@ -341,6 +346,16 @@ function buildPhoneExport() {
   const found = $$('#rows input').map((i) => findTreatment(i.value)).filter(Boolean);
   if (!found.length) return null;
   const sum = Object.fromEntries(PRICE_KEYS.map((k) => [k, 0]));
+  // Cada tratamiento muestra todos sus precios visibles (lista, efectivo, transferencia, cuotas).
+  const r3short = s.recargo_3_cuotas ? `hasta 3 cuotas +${pct(s.recargo_3_cuotas)}` : 'hasta 3 cuotas sin interés';
+  const priceLines = (p) => [
+    s.ver_lista && ['teal', `Precio de lista · tarjeta ${r3short}`, money(p.lista), s.ver_cuotas_3 && `3 cuotas de ${money(p.lista / 3)}`],
+    s.ver_efectivo && ['green', `Efectivo · ${pct(s.desc_efectivo)} de descuento`, money(p.efectivo)],
+    s.ver_transf && ['violet', `Transferencia / débito / QR · ${pct(s.desc_transferencia)} de descuento`, money(p.transf)],
+    s.ver_6 && ['teal', `6 cuotas · recargo ${pct(s.recargo_6_cuotas)}`, money(p.seis), s.ver_cuotas_6 && `6 cuotas de ${money(p.seis / 6)}`],
+    s.ver_12 && ['teal', `12 cuotas · recargo ${pct(s.recargo_12_cuotas)}`, money(p.doce), s.ver_cuotas_12 && `12 cuotas de ${money(p.doce / 12)}`],
+  ].filter(Boolean).map(([color, label, amount, sub]) =>
+    `<div class="px-price ${color}"><span>${label}</span><b>${amount}${sub ? `<small>${sub}</small>` : ''}</b></div>`).join('');
   const cards = found.map((t) => {
     const p = prices(t.efectivo);
     for (const k of PRICE_KEYS) sum[k] += p[k];
@@ -349,23 +364,22 @@ function buildPhoneExport() {
       <div class="px-card-body">
         <small>DETALLE</small>
         <p class="px-name">${esc(t.name)}</p>
-        ${s.ver_lista ? `<p class="px-line">Precio de lista: <b>${money(p.lista)}</b></p>` : ''}
+        ${priceLines(p)}
       </div>
     </section>`;
   });
-  const several = found.length > 1;
-  if (several && s.ver_total && s.ver_lista) {
-    cards.push(`<section class="px-card px-total"><div class="px-card-body">
-      <p class="px-name">TOTAL</p><p class="px-line">Precio de lista: <b>${money(sum.lista)}</b></p></div></section>`);
-  }
-  // Recuadros de formas de pago: con varios tratamientos muestran el total.
+  // El TOTAL va solo si hay varios tratamientos, el admin lo permite y la casilla está marcada.
+  const several = found.length > 1 && s.ver_total && $('#show-total').checked;
+  // Recuadros de formas de pago con el total.
   const r3 = s.recargo_3_cuotas ? `Hasta 3 cuotas, recargo ${pct(s.recargo_3_cuotas)}` : 'Hasta 3 cuotas sin interés';
   const boxes = [];
+  if (several) {
   if (s.ver_efectivo) boxes.push(['green', 'EFECTIVO', `${pct(s.desc_efectivo)} de descuento`, money(sum.efectivo)]);
   if (s.ver_transf) boxes.push(['violet', 'TRANSFERENCIA / DÉBITO / QR', `${pct(s.desc_transferencia)} de descuento`, money(sum.transf)]);
   if (s.ver_lista) boxes.push(['teal', 'TARJETA DE CRÉDITO', r3, s.ver_cuotas_3 ? `<span>3 cuotas de</span>${money(sum.lista / 3)}` : money(sum.lista)]);
   if (s.ver_6) boxes.push(['teal', '6 CUOTAS', `Recargo ${pct(s.recargo_6_cuotas)}`, s.ver_cuotas_6 ? `<span>6 cuotas de</span>${money(sum.seis / 6)}` : money(sum.seis)]);
   if (s.ver_12) boxes.push(['teal', '12 CUOTAS', `Recargo ${pct(s.recargo_12_cuotas)}`, s.ver_cuotas_12 ? `<span>12 cuotas de</span>${money(sum.doce / 12)}` : money(sum.doce)]);
+  }
 
   const paciente = $('#paciente').value.trim() || 'Particular';
   const boxesHtml = boxes.map(([color, title, sub, amount]) =>
@@ -382,7 +396,7 @@ function buildPhoneExport() {
         <div><small>PACIENTE</small><b>${esc(paciente)}</b></div>
       </div>
       ${cards.join('')}
-      ${boxes.length && several ? '<p class="px-boxes-title">FORMAS DE PAGO (TOTAL)</p>' : ''}
+      ${boxes.length ? '<p class="px-boxes-title">TOTAL · FORMAS DE PAGO</p>' : ''}
       ${boxes.length ? `<div class="px-boxes${boxes.length % 2 === 0 ? ' two' : ''}">${boxesHtml}</div>` : ''}
       ${s.ver_validez ? `<div class="px-validity"><small>VIGENCIA DEL PRESUPUESTO</small>
         <p>El presupuesto tiene una validez de ${s.validez_dias} días a partir de su fecha de emisión. Superada la vigencia, consultar si hubo modificaciones.</p></div>` : ''}
