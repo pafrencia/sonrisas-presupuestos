@@ -402,14 +402,15 @@ function loadHtml2canvas() {
   return html2canvasReady;
 }
 
-$('#export-phone').addEventListener('click', async () => {
+// Genera la imagen y se la pasa a `deliver` (descargar o compartir).
+async function exportPhoneImage(btn, deliver) {
   syncMeta();
   const fileName = buildPhoneExport();
   if (!fileName) {
     alert('Cargá al menos un tratamiento para exportar.');
     return;
   }
-  const btn = $('#export-phone');
+  const label = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Generando…';
   try {
@@ -418,24 +419,42 @@ $('#export-phone').addEventListener('click', async () => {
     await sheet.querySelector('img').decode().catch(() => {});
     const canvas = await window.html2canvas(sheet, { scale: 2, backgroundColor: '#ffffff' });
     const blob = await new Promise((ok) => canvas.toBlob(ok, 'image/png'));
-    const file = new File([blob], fileName, { type: 'image/png' });
-    // En el celular abre el menú de compartir (WhatsApp, etc.); si no, descarga.
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: fileName.replace(/\.png$/, '') }).catch(() => {});
-    } else {
-      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: fileName });
-      document.body.append(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    }
+    await deliver(blob, fileName);
   } catch (err) {
     alert('No se pudo generar la imagen: ' + (err?.message || err));
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Exportar para celular';
+    btn.textContent = label;
   }
-});
+}
+
+// Guarda el archivo en el dispositivo: en la PC va a Descargas y en el
+// celular a la carpeta de descargas / galería.
+function downloadBlob(blob, fileName) {
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: fileName });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function shareBlob(blob, fileName) {
+  const file = new File([blob], fileName, { type: 'image/png' });
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ files: [file], title: fileName.replace(/\.png$/, '') }).catch(() => {});
+  } else {
+    downloadBlob(blob, fileName);
+  }
+}
+
+$('#export-phone').addEventListener('click', (e) => exportPhoneImage(e.currentTarget, downloadBlob));
+$('#share-phone').addEventListener('click', (e) => exportPhoneImage(e.currentTarget, shareBlob));
+// "Compartir" solo aparece donde el navegador puede compartir archivos (celulares).
+try {
+  $('#share-phone').hidden = !navigator.canShare?.({ files: [new File([''], 'x.png', { type: 'image/png' })] });
+} catch {
+  $('#share-phone').hidden = true;
+}
 
 $('#print').addEventListener('click', () => {
   syncMeta();
