@@ -122,6 +122,8 @@ dialog { border: 0; border-radius: 12px; padding: 1.5rem; width: min(520px, calc
 dialog form { display: grid; gap: .8rem; }
 dialog::backdrop { background: rgba(20,30,40,.4); }
 .check { display: flex; gap: .5rem; align-items: center; font-weight: 400; }
+.toolbar-check { padding: 0 .5rem; cursor: pointer; }
+.toolbar-check[hidden] { display: none; }
 .visibility { border: 1px solid var(--line); border-radius: 8px; padding: .8rem 1rem; }
 .visibility legend { font-weight: 700; padding: 0 .3rem; }
 .visibility .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .4rem 1rem; }
@@ -145,9 +147,15 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
 .px-card-body { background: #f4f9fa; padding: 10px 14px; }
 .px-name { font-size: 15px; font-weight: 700; margin: 2px 0 6px; }
 .px-line { margin: 2px 0; }
+.px-price { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-left: 4px solid var(--accent); background: #fff; border-radius: 6px; padding: 6px 10px; margin-top: 6px; }
+.px-price span { font-size: 11px; line-height: 1.3; }
+.px-price b { font-size: 14px; white-space: nowrap; text-align: right; }
+.px-price b small { color: var(--muted); font-weight: 600; font-size: 10px; letter-spacing: 0; }
+.px-price.green { border-left-color: #4f9a62; }
+.px-price.violet { border-left-color: #7d5bb5; }
 .px-total { border: 2px solid var(--accent); }
 .px-total .px-name { color: var(--accent); letter-spacing: .1em; margin-top: 0; }
-.px-boxes-title { font-size: 10px; font-weight: 700; color: var(--muted); margin: 16px 0 6px; letter-spacing: .05em; }
+.px-boxes-title { font-size: 12px; font-weight: 700; color: var(--accent); margin: 16px 0 6px; letter-spacing: .05em; }
 .px-boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
 .px-boxes-title + .px-boxes { margin-top: 0; }
 .px-box { border-radius: 10px; padding: 10px; }
