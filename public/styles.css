@@ -101,6 +101,8 @@ label { display: grid; gap: .3rem; font-size: .9rem; font-weight: 600; }
 .badge { border-radius: 8px; padding: .8rem; font-weight: 700; text-align: center; font-size: .85rem; white-space: pre-line; display: grid; place-items: center; }
 .badge.green { background: var(--green); }
 .badge.violet { background: var(--violet); }
+.cash-note { margin: 10px 0 0; font-size: .8rem; font-weight: 600; color: var(--ink); }
+.px-cash-note { margin: 12px 0 0; font-size: 11px; font-weight: 600; line-height: 1.4; }
 .validity { background: var(--soft); border-radius: 8px; padding: .8rem; margin: 0; font-size: .85rem; }
 
 /* Búsqueda y listados */
@@ -277,6 +279,7 @@ body.printing .budget-table tr.empty { display: none; }
 body.printing .c-code { width: 13mm; }
 body.printing .code-input { width: 100%; border: 0; background: none; padding: 0; font-size: 8pt; }
 body.printing .sheet-foot { margin-top: 4mm; gap: 2.5mm; flex-direction: row; }
+body.printing .cash-note { margin-top: 2mm; font-size: 6.5pt; }
 body.printing .badge, body.printing .validity { padding: 2mm; font-size: 7pt; border-radius: 4px; }
 
 @media print {

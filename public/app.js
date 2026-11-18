@@ -400,6 +400,7 @@ function buildPhoneExport() {
       ${boxes.length ? `<div class="px-boxes${boxes.length % 2 === 0 ? ' two' : ''}">${boxesHtml}</div>` : ''}
       ${s.ver_validez ? `<div class="px-validity"><small>VIGENCIA DEL PRESUPUESTO</small>
         <p>El presupuesto tiene una validez de ${s.validez_dias} días a partir de su fecha de emisión. Superada la vigencia, consultar si hubo modificaciones.</p></div>` : ''}
+      ${s.ver_efectivo ? '<p class="px-cash-note">* El precio en efectivo corresponde únicamente a pago de contado en billetes. No válido para transferencias.</p>' : ''}
       <footer>SONRISAS PERFECTAS</footer>
     </div>`;
   return `Presupuesto ${paciente} ${fmtDate($('#fecha').value).replaceAll('/', '-')}.png`;
