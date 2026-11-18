@@ -38,6 +38,7 @@
     <main id="panel-budget" class="panel">
       <div class="toolbar no-print">
         <button class="btn primary" id="print">Imprimir / generar PDF</button>
+        <button class="btn primary" id="export-phone">Exportar para celular</button>
         <button class="btn" id="add-row">Agregar fila</button>
         <button class="btn" id="clear">Nuevo presupuesto</button>
       </div>
@@ -221,6 +222,9 @@
       <div class="actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn primary" value="ok">Subir</button></div>
     </form>
   </dialog>
+
+  <!-- Copia del presupuesto en formato vertical, para exportar como imagen -->
+  <div id="phone-export" class="phone-export" aria-hidden="true"></div>
 
   <script src="app.js" type="module"></script>
 </body>

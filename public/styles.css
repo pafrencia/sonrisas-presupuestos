@@ -129,6 +129,41 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
 
 .print-only { display: none; }
 
+/* Exportar para celular: hoja vertical que se convierte en imagen */
+.phone-export { position: fixed; left: -10000px; top: 0; }
+.px-sheet { width: 420px; background: #fff; padding: 22px; color: var(--ink); font-size: 13px; }
+.px-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 3px solid var(--accent); padding-bottom: 12px; }
+.px-head img { width: 130px; }
+.px-head h1 { margin: 0; font-size: 20px; letter-spacing: .2em; color: var(--accent); text-align: right; }
+.px-head p { margin: 2px 0 0; font-size: 8px; letter-spacing: .15em; color: var(--muted); text-align: right; }
+.px-sheet h2 { font-size: 15px; margin: 16px 0 10px; }
+.px-sheet small { display: block; font-size: 9px; font-weight: 700; letter-spacing: .05em; color: var(--muted); }
+.px-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+.px-meta b { font-size: 15px; }
+.px-card { border: 1px solid #cfe0e6; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.px-card header { background: var(--accent); color: #fff; font-weight: 700; font-size: 12px; padding: 9px 14px; }
+.px-card-body { background: #f4f9fa; padding: 10px 14px; }
+.px-name { font-size: 15px; font-weight: 700; margin: 2px 0 6px; }
+.px-line { margin: 2px 0; }
+.px-total { border: 2px solid var(--accent); }
+.px-total .px-name { color: var(--accent); letter-spacing: .1em; margin-top: 0; }
+.px-boxes-title { font-size: 10px; font-weight: 700; color: var(--muted); margin: 16px 0 6px; letter-spacing: .05em; }
+.px-boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.px-boxes-title + .px-boxes { margin-top: 0; }
+.px-box { border-radius: 10px; padding: 10px; }
+.px-box small { color: inherit; font-size: 9px; }
+.px-box p { margin: 6px 0 8px; font-size: 10px; color: var(--ink); }
+.px-box b { font-size: 14px; white-space: nowrap; }
+.px-box b span { display: block; font-size: 10px; font-weight: 600; }
+.px-boxes.two { grid-template-columns: repeat(2, 1fr); }
+.px-box.green { background: var(--green); color: #2d6b3c; }
+.px-box.violet { background: var(--violet); color: #5b3f8c; }
+.px-box.teal { background: #e3f1f3; color: var(--accent); }
+.px-validity { background: var(--soft); border-radius: 10px; padding: 12px 14px; margin-top: 14px; }
+.px-validity small { color: var(--accent); font-size: 11px; }
+.px-validity p { margin: 6px 0 0; line-height: 1.4; }
+.px-sheet footer { border-top: 3px solid var(--accent); margin-top: 16px; padding-top: 8px; font-size: 10px; font-weight: 700; letter-spacing: .05em; color: var(--accent); }
+
 /* Celular: las tablas pasan a tarjetas. No se aplica mientras se arma
    la impresión (.printing), así el PDF sale igual desde cualquier pantalla. */
 @media screen and (max-width: 700px) {
@@ -139,7 +174,7 @@ dialog::backdrop { background: rgba(20,30,40,.4); }
   body:not(.printing) #who-name { display: none; }
   body:not(.printing) .panel { padding: 12px; }
   body:not(.printing) .toolbar .btn { flex: 1 1 auto; }
-  body:not(.printing) .toolbar #print { flex-basis: 100%; padding: .75rem; }
+  body:not(.printing) .toolbar #print, body:not(.printing) .toolbar #export-phone { flex-basis: 100%; padding: .75rem; }
   body:not(.printing) .card { padding: 12px; }
 
   body:not(.printing) .sheet { padding: 14px; overflow: visible; }

@@ -333,6 +333,110 @@ $('#clear').addEventListener('click', () => {
   try { localStorage.removeItem(DRAFT_KEY); } catch {}
   restoreDraft();
 });
+// ---------- Exportar para celular ----------
+// Arma una versión vertical del presupuesto y la guarda como imagen PNG,
+// fácil de mandar por WhatsApp. Respeta lo que el administrador ocultó.
+function buildPhoneExport() {
+  const s = state.settings;
+  const found = $$('#rows input').map((i) => findTreatment(i.value)).filter(Boolean);
+  if (!found.length) return null;
+  const sum = Object.fromEntries(PRICE_KEYS.map((k) => [k, 0]));
+  const cards = found.map((t) => {
+    const p = prices(t.efectivo);
+    for (const k of PRICE_KEYS) sum[k] += p[k];
+    return `<section class="px-card">
+      <header>${s.ver_codigo ? `CÓDIGO ${esc(t.code)}` : 'TRATAMIENTO'}</header>
+      <div class="px-card-body">
+        <small>DETALLE</small>
+        <p class="px-name">${esc(t.name)}</p>
+        ${s.ver_lista ? `<p class="px-line">Precio de lista: <b>${money(p.lista)}</b></p>` : ''}
+      </div>
+    </section>`;
+  });
+  const several = found.length > 1;
+  if (several && s.ver_total && s.ver_lista) {
+    cards.push(`<section class="px-card px-total"><div class="px-card-body">
+      <p class="px-name">TOTAL</p><p class="px-line">Precio de lista: <b>${money(sum.lista)}</b></p></div></section>`);
+  }
+  // Recuadros de formas de pago: con varios tratamientos muestran el total.
+  const r3 = s.recargo_3_cuotas ? `Hasta 3 cuotas, recargo ${pct(s.recargo_3_cuotas)}` : 'Hasta 3 cuotas sin interés';
+  const boxes = [];
+  if (s.ver_efectivo) boxes.push(['green', 'EFECTIVO', `${pct(s.desc_efectivo)} de descuento`, money(sum.efectivo)]);
+  if (s.ver_transf) boxes.push(['violet', 'TRANSFERENCIA / DÉBITO / QR', `${pct(s.desc_transferencia)} de descuento`, money(sum.transf)]);
+  if (s.ver_lista) boxes.push(['teal', 'TARJETA DE CRÉDITO', r3, s.ver_cuotas_3 ? `<span>3 cuotas de</span>${money(sum.lista / 3)}` : money(sum.lista)]);
+  if (s.ver_6) boxes.push(['teal', '6 CUOTAS', `Recargo ${pct(s.recargo_6_cuotas)}`, s.ver_cuotas_6 ? `<span>6 cuotas de</span>${money(sum.seis / 6)}` : money(sum.seis)]);
+  if (s.ver_12) boxes.push(['teal', '12 CUOTAS', `Recargo ${pct(s.recargo_12_cuotas)}`, s.ver_cuotas_12 ? `<span>12 cuotas de</span>${money(sum.doce / 12)}` : money(sum.doce)]);
+
+  const paciente = $('#paciente').value.trim() || 'Particular';
+  const boxesHtml = boxes.map(([color, title, sub, amount]) =>
+    `<div class="px-box ${color}"><small>${title}</small><p>${sub}</p><b>${amount}</b></div>`).join('');
+  $('#phone-export').innerHTML = `
+    <div class="px-sheet">
+      <div class="px-head">
+        <img src="logo.jpg" alt="">
+        <div><h1>PRESUPUESTO</h1><p>TRATAMIENTO ODONTOLÓGICO</p></div>
+      </div>
+      <h2>PRESUPUESTO ODONTOLÓGICO</h2>
+      <div class="px-meta">
+        <div><small>FECHA</small><b>${esc(fmtDate($('#fecha').value))}</b></div>
+        <div><small>PACIENTE</small><b>${esc(paciente)}</b></div>
+      </div>
+      ${cards.join('')}
+      ${boxes.length && several ? '<p class="px-boxes-title">FORMAS DE PAGO (TOTAL)</p>' : ''}
+      ${boxes.length ? `<div class="px-boxes${boxes.length % 2 === 0 ? ' two' : ''}">${boxesHtml}</div>` : ''}
+      ${s.ver_validez ? `<div class="px-validity"><small>VIGENCIA DEL PRESUPUESTO</small>
+        <p>El presupuesto tiene una validez de ${s.validez_dias} días a partir de su fecha de emisión. Superada la vigencia, consultar si hubo modificaciones.</p></div>` : ''}
+      <footer>SONRISAS PERFECTAS</footer>
+    </div>`;
+  return `Presupuesto ${paciente} ${fmtDate($('#fecha').value).replaceAll('/', '-')}.png`;
+}
+
+let html2canvasReady = null;
+function loadHtml2canvas() {
+  if (!html2canvasReady) {
+    html2canvasReady = new Promise((ok, ko) => {
+      const el = Object.assign(document.createElement('script'), { src: 'vendor/html2canvas.min.js', onload: ok, onerror: ko });
+      document.head.append(el);
+    });
+  }
+  return html2canvasReady;
+}
+
+$('#export-phone').addEventListener('click', async () => {
+  syncMeta();
+  const fileName = buildPhoneExport();
+  if (!fileName) {
+    alert('Cargá al menos un tratamiento para exportar.');
+    return;
+  }
+  const btn = $('#export-phone');
+  btn.disabled = true;
+  btn.textContent = 'Generando…';
+  try {
+    await loadHtml2canvas();
+    const sheet = $('#phone-export .px-sheet');
+    await sheet.querySelector('img').decode().catch(() => {});
+    const canvas = await window.html2canvas(sheet, { scale: 2, backgroundColor: '#ffffff' });
+    const blob = await new Promise((ok) => canvas.toBlob(ok, 'image/png'));
+    const file = new File([blob], fileName, { type: 'image/png' });
+    // En el celular abre el menú de compartir (WhatsApp, etc.); si no, descarga.
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: fileName.replace(/\.png$/, '') }).catch(() => {});
+    } else {
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: fileName });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+  } catch (err) {
+    alert('No se pudo generar la imagen: ' + (err?.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Exportar para celular';
+  }
+});
+
 $('#print').addEventListener('click', () => {
   syncMeta();
   const prev = document.title;
